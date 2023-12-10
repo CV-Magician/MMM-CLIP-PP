@@ -48,6 +48,24 @@ def parse_args(args):
         help="Path to file(s) with validation data",
     )
     parser.add_argument(
+        "--pj-dataset-val",
+        type=str,
+        default=None,
+        help="Path to file(s) with validation data",
+    )
+    parser.add_argument(
+        "--voc-val",
+        type=str,
+        default=None,
+        help="Path to file(s) with validation data",
+    )
+    parser.add_argument(
+        "--coco-val",
+        type=str,
+        default=None,
+        help="Path to file(s) with validation data",
+    )
+    parser.add_argument(
         "--train-num-samples",
         type=int,
         default=None,

@@ -19,6 +19,7 @@ from .distributed import is_master
 from .zero_shot import zero_shot_eval
 from .precision import get_autocast
 
+import pdb
 
 class AverageMeter(object):
     """Computes and stores the average and current value"""
@@ -61,7 +62,7 @@ def backward(total_loss, scaler):
         total_loss.backward()
 
 
-def train_one_epoch(model, data, loss, epoch, optimizer, scaler, scheduler, dist_model, args, tb_writer=None):
+def train_one_epoch(model, data, loss, epoch, optimizer, scaler, scheduler, dist_model, classifier, args, tb_writer=None):
     device = torch.device(args.device)
     autocast = get_autocast(args.precision)
     input_dtype = get_input_dtype(args.precision)
@@ -89,27 +90,24 @@ def train_one_epoch(model, data, loss, epoch, optimizer, scaler, scheduler, dist
         if not args.skip_scheduler:
             scheduler(step)
 
-        images, texts = batch
+        images, targets = batch
         images = images.to(device=device, dtype=input_dtype, non_blocking=True)
-        texts = texts.to(device=device, non_blocking=True)
+        targets = targets.to(device=device, non_blocking=True)
 
         data_time_m.update(time.time() - end)
         optimizer.zero_grad()
 
         if args.accum_freq == 1:
             with autocast():
-                model_out = model(images, texts)
-                logit_scale = model_out["logit_scale"]
+                model_out = model(images, classifier)
+                # logit_scale = model_out["logit_scale"]
                 if args.distill:
                     with torch.no_grad():
                         dist_model_out = dist_model(images, texts)
                     model_out.update({f'dist_{k}': v for k, v in dist_model_out.items()})
-                losses = loss(**model_out, output_dict=True)
+                losses = loss(model_out, targets.float())
 
-                total_loss = sum(losses.values())
-                losses["loss"] = total_loss
-
-            backward(total_loss, scaler)
+            backward(losses, scaler)
         else:
             # First, cache the features without any gradient tracking.
             with torch.no_grad():
@@ -197,13 +195,13 @@ def train_one_epoch(model, data, loss, epoch, optimizer, scaler, scheduler, dist
             samples_per_epoch = dataloader.num_samples
             percent_complete = 100.0 * batch_count / num_batches_per_epoch
 
-            # NOTE loss is coarsely sampled, just master node and per log update
-            for key, val in losses.items():
-                if key not in losses_m:
-                    losses_m[key] = AverageMeter()
-                losses_m[key].update(val.item(), batch_size)
+            # # NOTE loss is coarsely sampled, just master node and per log update
+            # for key, val in losses.items():
+            #     if key not in losses_m:
+            #         losses_m[key] = AverageMeter()
+            #     losses_m[key].update(val.item(), batch_size)
 
-            logit_scale_scalar = logit_scale.item()
+            # logit_scale_scalar = logit_scale.item()
             loss_log = " ".join(
                 [
                     f"{loss_name.capitalize()}: {loss_m.val:#.5g} ({loss_m.avg:#.5g})" 
@@ -217,7 +215,8 @@ def train_one_epoch(model, data, loss, epoch, optimizer, scaler, scheduler, dist
                 f"Data (t): {data_time_m.avg:.3f} "
                 f"Batch (t): {batch_time_m.avg:.3f}, {samples_per_second:#g}/s, {samples_per_second_per_gpu:#g}/s/gpu "
                 f"LR: {optimizer.param_groups[0]['lr']:5f} "
-                f"Logit Scale: {logit_scale_scalar:.3f} " + loss_log
+                f"Loss: {losses} "
+                # f"Logit Scale: {logit_scale_scalar:.3f} " + loss_log
             )
 
             # Save train loss / etc. Using non avg meter values as loggers have their own smoothing
@@ -226,12 +225,12 @@ def train_one_epoch(model, data, loss, epoch, optimizer, scaler, scheduler, dist
                 "batch_time": batch_time_m.val,
                 "samples_per_second": samples_per_second,
                 "samples_per_second_per_gpu": samples_per_second_per_gpu,
-                "scale": logit_scale_scalar,
+                # "scale": logit_scale_scalar,
                 "lr": optimizer.param_groups[0]["lr"]
             }            
-            log_data.update({name:val.val for name,val in losses_m.items()})
+            # log_data.update({name:val.val for name,val in losses_m.items()})
 
-            log_data = {"train/" + name: val for name, val in log_data.items()}
+            # log_data = {"train/" + name: val for name, val in log_data.items()}
 
             if tb_writer is not None:
                 for name, val in log_data.items():
@@ -248,14 +247,14 @@ def train_one_epoch(model, data, loss, epoch, optimizer, scaler, scheduler, dist
     # end for
 
 
-def evaluate(model, data, epoch, args, tb_writer=None, tokenizer=None):
+def evaluate(model, data, epoch, args, classifier=None, tb_writer=None, tokenizer=None):
     metrics = {}
     if not is_master(args):
         return metrics
     device = torch.device(args.device)
     model.eval()
 
-    zero_shot_metrics = zero_shot_eval(model, data, epoch, args, tokenizer=tokenizer)
+    zero_shot_metrics = zero_shot_eval(model, data, epoch, args, classifier, tokenizer=tokenizer)
     metrics.update(zero_shot_metrics)
 
     autocast = get_autocast(args.precision)

@@ -3,7 +3,8 @@ wandb/
 models/
 features/
 results/
-
+src/logs/
+openclip_data/VOC*
 tests/data/
 *.pt
 

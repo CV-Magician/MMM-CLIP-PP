@@ -21,7 +21,9 @@ from .timm_model import TimmModel
 from .transformer import LayerNormFp32, LayerNorm, QuickGELU, Attention, VisionTransformer, TextTransformer,\
     text_global_pool
 from .utils import to_2tuple
+import pdb
 
+text_parm = ["positional_embedding", "text_projection", "transformer.resblocks.0.attn.in_proj_weight", "transformer.resblocks.0.attn.in_proj_bias", "transformer.resblocks.0.attn.out_proj.weight", "transformer.resblocks.0.attn.out_proj.bias", "transformer.resblocks.0.ln_1.weight", "transformer.resblocks.0.ln_1.bias", "transformer.resblocks.0.mlp.c_fc.weight", "transformer.resblocks.0.mlp.c_fc.bias", "transformer.resblocks.0.mlp.c_proj.weight", "transformer.resblocks.0.mlp.c_proj.bias", "transformer.resblocks.0.ln_2.weight", "transformer.resblocks.0.ln_2.bias", "transformer.resblocks.1.attn.in_proj_weight", "transformer.resblocks.1.attn.in_proj_bias", "transformer.resblocks.1.attn.out_proj.weight", "transformer.resblocks.1.attn.out_proj.bias", "transformer.resblocks.1.ln_1.weight", "transformer.resblocks.1.ln_1.bias", "transformer.resblocks.1.mlp.c_fc.weight", "transformer.resblocks.1.mlp.c_fc.bias", "transformer.resblocks.1.mlp.c_proj.weight", "transformer.resblocks.1.mlp.c_proj.bias", "transformer.resblocks.1.ln_2.weight", "transformer.resblocks.1.ln_2.bias", "transformer.resblocks.2.attn.in_proj_weight", "transformer.resblocks.2.attn.in_proj_bias", "transformer.resblocks.2.attn.out_proj.weight", "transformer.resblocks.2.attn.out_proj.bias", "transformer.resblocks.2.ln_1.weight", "transformer.resblocks.2.ln_1.bias", "transformer.resblocks.2.mlp.c_fc.weight", "transformer.resblocks.2.mlp.c_fc.bias", "transformer.resblocks.2.mlp.c_proj.weight", "transformer.resblocks.2.mlp.c_proj.bias", "transformer.resblocks.2.ln_2.weight", "transformer.resblocks.2.ln_2.bias", "transformer.resblocks.3.attn.in_proj_weight", "transformer.resblocks.3.attn.in_proj_bias", "transformer.resblocks.3.attn.out_proj.weight", "transformer.resblocks.3.attn.out_proj.bias", "transformer.resblocks.3.ln_1.weight", "transformer.resblocks.3.ln_1.bias", "transformer.resblocks.3.mlp.c_fc.weight", "transformer.resblocks.3.mlp.c_fc.bias", "transformer.resblocks.3.mlp.c_proj.weight", "transformer.resblocks.3.mlp.c_proj.bias", "transformer.resblocks.3.ln_2.weight", "transformer.resblocks.3.ln_2.bias", "transformer.resblocks.4.attn.in_proj_weight", "transformer.resblocks.4.attn.in_proj_bias", "transformer.resblocks.4.attn.out_proj.weight", "transformer.resblocks.4.attn.out_proj.bias", "transformer.resblocks.4.ln_1.weight", "transformer.resblocks.4.ln_1.bias", "transformer.resblocks.4.mlp.c_fc.weight", "transformer.resblocks.4.mlp.c_fc.bias", "transformer.resblocks.4.mlp.c_proj.weight", "transformer.resblocks.4.mlp.c_proj.bias", "transformer.resblocks.4.ln_2.weight", "transformer.resblocks.4.ln_2.bias", "transformer.resblocks.5.attn.in_proj_weight", "transformer.resblocks.5.attn.in_proj_bias", "transformer.resblocks.5.attn.out_proj.weight", "transformer.resblocks.5.attn.out_proj.bias", "transformer.resblocks.5.ln_1.weight", "transformer.resblocks.5.ln_1.bias", "transformer.resblocks.5.mlp.c_fc.weight", "transformer.resblocks.5.mlp.c_fc.bias", "transformer.resblocks.5.mlp.c_proj.weight", "transformer.resblocks.5.mlp.c_proj.bias", "transformer.resblocks.5.ln_2.weight", "transformer.resblocks.5.ln_2.bias", "transformer.resblocks.6.attn.in_proj_weight", "transformer.resblocks.6.attn.in_proj_bias", "transformer.resblocks.6.attn.out_proj.weight", "transformer.resblocks.6.attn.out_proj.bias", "transformer.resblocks.6.ln_1.weight", "transformer.resblocks.6.ln_1.bias", "transformer.resblocks.6.mlp.c_fc.weight", "transformer.resblocks.6.mlp.c_fc.bias", "transformer.resblocks.6.mlp.c_proj.weight", "transformer.resblocks.6.mlp.c_proj.bias", "transformer.resblocks.6.ln_2.weight", "transformer.resblocks.6.ln_2.bias", "transformer.resblocks.7.attn.in_proj_weight", "transformer.resblocks.7.attn.in_proj_bias", "transformer.resblocks.7.attn.out_proj.weight", "transformer.resblocks.7.attn.out_proj.bias", "transformer.resblocks.7.ln_1.weight", "transformer.resblocks.7.ln_1.bias", "transformer.resblocks.7.mlp.c_fc.weight", "transformer.resblocks.7.mlp.c_fc.bias", "transformer.resblocks.7.mlp.c_proj.weight", "transformer.resblocks.7.mlp.c_proj.bias", "transformer.resblocks.7.ln_2.weight", "transformer.resblocks.7.ln_2.bias", "transformer.resblocks.8.attn.in_proj_weight", "transformer.resblocks.8.attn.in_proj_bias", "transformer.resblocks.8.attn.out_proj.weight", "transformer.resblocks.8.attn.out_proj.bias", "transformer.resblocks.8.ln_1.weight", "transformer.resblocks.8.ln_1.bias", "transformer.resblocks.8.mlp.c_fc.weight", "transformer.resblocks.8.mlp.c_fc.bias", "transformer.resblocks.8.mlp.c_proj.weight", "transformer.resblocks.8.mlp.c_proj.bias", "transformer.resblocks.8.ln_2.weight", "transformer.resblocks.8.ln_2.bias", "transformer.resblocks.9.attn.in_proj_weight", "transformer.resblocks.9.attn.in_proj_bias", "transformer.resblocks.9.attn.out_proj.weight", "transformer.resblocks.9.attn.out_proj.bias", "transformer.resblocks.9.ln_1.weight", "transformer.resblocks.9.ln_1.bias", "transformer.resblocks.9.mlp.c_fc.weight", "transformer.resblocks.9.mlp.c_fc.bias", "transformer.resblocks.9.mlp.c_proj.weight", "transformer.resblocks.9.mlp.c_proj.bias", "transformer.resblocks.9.ln_2.weight", "transformer.resblocks.9.ln_2.bias", "transformer.resblocks.10.attn.in_proj_weight", "transformer.resblocks.10.attn.in_proj_bias", "transformer.resblocks.10.attn.out_proj.weight", "transformer.resblocks.10.attn.out_proj.bias", "transformer.resblocks.10.ln_1.weight", "transformer.resblocks.10.ln_1.bias", "transformer.resblocks.10.mlp.c_fc.weight", "transformer.resblocks.10.mlp.c_fc.bias", "transformer.resblocks.10.mlp.c_proj.weight", "transformer.resblocks.10.mlp.c_proj.bias", "transformer.resblocks.10.ln_2.weight", "transformer.resblocks.10.ln_2.bias", "transformer.resblocks.11.attn.in_proj_weight", "transformer.resblocks.11.attn.in_proj_bias", "transformer.resblocks.11.attn.out_proj.weight", "transformer.resblocks.11.attn.out_proj.bias", "transformer.resblocks.11.ln_1.weight", "transformer.resblocks.11.ln_1.bias", "transformer.resblocks.11.mlp.c_fc.weight", "transformer.resblocks.11.mlp.c_fc.bias", "transformer.resblocks.11.mlp.c_proj.weight", "transformer.resblocks.11.mlp.c_proj.bias", "transformer.resblocks.11.ln_2.weight", "transformer.resblocks.11.ln_2.bias", "token_embedding.weight", "ln_final.weight", "ln_final.bias"]
 
 @dataclass
 class CLIPVisionCfg:
@@ -257,6 +259,7 @@ class CLIP(nn.Module):
         # lock image tower as per LiT - https://arxiv.org/abs/2111.07991
         self.visual.lock(unlocked_groups=unlocked_groups, freeze_bn_stats=freeze_bn_stats)
 
+
     @torch.jit.ignore
     def set_grad_checkpointing(self, enable=True):
         self.visual.set_grad_checkpointing(enable)
@@ -473,7 +476,7 @@ def build_model_from_openai_state_dict(
         heads=transformer_heads,
         layers=transformer_layers,
     )
-    model = CLIP(
+    model = CustomTextCLIP(
         embed_dim,
         vision_cfg=vision_cfg,
         text_cfg=text_cfg,
@@ -484,6 +487,9 @@ def build_model_from_openai_state_dict(
     for key in ["input_resolution", "context_length", "vocab_size"]:
         state_dict.pop(key, None)
     convert_weights_to_fp16(model)  # OpenAI state dicts are partially converted to float16
+    for i in text_parm:
+        state_dict['text.'+ i] = state_dict[i]
+        state_dict.pop(i)
     model.load_state_dict(state_dict)
     return model.eval()
 
@@ -604,3 +610,72 @@ def get_model_tokenize_cfg(model):
     if vocab_size is not None:
         cfg['vocab_size'] = vocab_size
     return cfg
+
+
+
+class TransformerDecoderBlock(nn.Module):
+    def __init__(self, d_model, nhead=8, dim_feedforward=2048, dropout=0.0):
+        super(TransformerDecoderBlock, self).__init__()
+
+        # Self-Attention Layer
+        self.self_attn = nn.MultiheadAttention(d_model, nhead, dropout=dropout)
+
+        # Layer Normalization
+        self.norm1 = nn.LayerNorm(d_model)
+
+        # Feedforward Layer
+        self.feedforward = nn.Sequential(
+            nn.Linear(d_model, dim_feedforward),
+            nn.ReLU(),
+            nn.Dropout(dropout),
+            nn.Linear(dim_feedforward, d_model)
+        )
+
+        # Layer Normalization
+        self.norm2 = nn.LayerNorm(d_model)
+
+
+    def forward(self, q, k):
+        # Self-Attention
+        attn_output, _ = self.self_attn(q, k, k)
+
+        # Residual Connection and Layer Normalization
+        q = q + attn_output
+        q = self.norm1(q)
+
+        # Feedforward
+        ff_output = self.feedforward(q)
+
+        # Residual Connection and Layer Normalization
+        q = q + ff_output
+        q = self.norm2(q)
+
+        return q
+
+class AdaptedCLIP(nn.Module):
+    def __init__(self, clip_model):
+        super(AdaptedCLIP, self).__init__()
+        self.clip_model = clip_model
+        self.visual = self.clip_model.visual
+        self.encode_text = self.clip_model.encode_text
+        self.logit_scale = self.clip_model.logit_scale
+        self.transformer_classifier = TransformerDecoderBlock(768, 4)
+        self.decoder_1 = TransformerDecoderBlock(768, 4)
+        self.decoder_2 = TransformerDecoderBlock(768, 4)
+
+    def lock_image_tower(self, unlocked_groups=0, freeze_bn_stats=False):
+        self.clip_model.visual.lock(unlocked_groups=unlocked_groups, freeze_bn_stats=freeze_bn_stats)
+        
+    def lock_text_tower(self, unlocked_layers: int = 0, freeze_layer_norm: bool = True):
+        for param in self.clip_model.text.parameters():
+            param.requires_grad = False
+
+    def forward(self, x, classifier):
+        x = self.clip_model(image=x)[0]
+        # pdb.set_trace()
+        x = self.decoder_1(classifier.T.unsqueeze(1).repeat(1, x.shape[0], 1), x.unsqueeze(0))
+        x = self.decoder_2(classifier.T.unsqueeze(1).repeat(1, x.shape[1], 1), x)
+        x = self.transformer_classifier(classifier.T.unsqueeze(1).repeat(1, x.shape[1], 1), x)
+        x = x.permute(1, 0, 2)
+        x = F.adaptive_avg_pool2d(x, (x.shape[1], 1)).squeeze()
+        return x

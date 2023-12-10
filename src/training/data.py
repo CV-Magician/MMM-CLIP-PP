@@ -19,6 +19,9 @@ from torch.utils.data import Dataset, DataLoader, SubsetRandomSampler, IterableD
 from torch.utils.data.distributed import DistributedSampler
 from webdataset.filters import _shuffle
 from webdataset.tariterators import base_plus_ext, url_opener, tar_file_expander, valid_sample
+import ast
+
+import pdb
 
 try:
     import horovod.torch as hvd
@@ -30,21 +33,22 @@ class CsvDataset(Dataset):
     def __init__(self, input_filename, transforms, img_key, caption_key, sep="\t", tokenizer=None):
         logging.debug(f'Loading csv data from {input_filename}.')
         df = pd.read_csv(input_filename, sep=sep)
-
         self.images = df[img_key].tolist()
         self.captions = df[caption_key].tolist()
+        self.captions = [ast.literal_eval(i) for i in self.captions]
         self.transforms = transforms
         logging.debug('Done loading data.')
 
         self.tokenize = tokenizer
-
     def __len__(self):
         return len(self.captions)
 
     def __getitem__(self, idx):
+        # pdb.set_trace()
         images = self.transforms(Image.open(str(self.images[idx])))
-        texts = self.tokenize([str(self.captions[idx])])[0]
-        return images, texts
+        # texts = self.tokenize([str(self.captions[idx])])[0]
+        targets = torch.tensor(self.captions[idx])
+        return images, targets
 
 
 class SharedEpoch:
@@ -444,7 +448,15 @@ def get_wds_dataset(args, preprocess_img, is_train, epoch=0, floor=False, tokeni
 
 
 def get_csv_dataset(args, preprocess_fn, is_train, epoch=0, tokenizer=None):
-    input_filename = args.train_data if is_train else args.val_data
+    if args.pj_dataset_val:
+        input_filename = args.pj_dataset_val
+    elif args.voc_val:
+        input_filename = args.voc_val
+    elif args.coco_val:
+        input_filename = args.coco_val
+    else:
+        input_filename = args.train_data if is_train else args.val_data
+
     assert input_filename
     dataset = CsvDataset(
         input_filename,
@@ -560,5 +572,19 @@ def get_data(args, preprocess_fns, epoch=0, tokenizer=None):
 
     if args.imagenet_v2 is not None:
         data["imagenet-v2"] = get_imagenet(args, preprocess_fns, "v2")
+
+    #TODO: Extend dataset here
+
+    if args.pj_dataset_val is not None:
+        data["pj_dataset_val"] = get_dataset_fn(args.val_data, args.dataset_type)(
+            args, preprocess_val, is_train=False, tokenizer=tokenizer)
+        
+    if args.voc_val is not None:
+        data["voc_val"] = get_dataset_fn(args.val_data, args.dataset_type)(
+            args, preprocess_val, is_train=False, tokenizer=tokenizer)
+        
+    if args.coco_val is not None:
+        data["coco_val"] = get_dataset_fn(args.val_data, args.dataset_type)(
+            args, preprocess_val, is_train=False, tokenizer=tokenizer)
 
     return data

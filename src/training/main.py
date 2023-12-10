@@ -13,6 +13,12 @@ import torch
 from torch import optim
 from torch.cuda.amp import GradScaler
 
+import torch.nn as nn
+from .coco_zeroshot_data import coco_classnames
+from .zero_shot import zero_shot_classifier
+from open_clip import OPENAI_IMAGENET_TEMPLATES
+import pdb
+
 try:
     import wandb
 except ImportError:
@@ -296,10 +302,10 @@ def main(args):
         if args.ddp_static_graph:
             # this doesn't exist in older PyTorch, arg only added if enabled
             ddp_args['static_graph'] = True
-        model = torch.nn.parallel.DistributedDataParallel(model, device_ids=[device], **ddp_args)
+        model = torch.nn.parallel.DistributedDataParallel(model, device_ids=[device], find_unused_parameters=True, **ddp_args)
     
         if args.distill:
-            dist_model = torch.nn.parallel.DistributedDataParallel(dist_model, device_ids=[device], **ddp_args)
+            dist_model = torch.nn.parallel.DistributedDataParallel(dist_model, device_ids=[device], find_unused_parameters=True, **ddp_args)
 
     # create optimizer and scaler
     optimizer = None
@@ -427,17 +433,19 @@ def main(args):
         evaluate(model, data, start_epoch, args, tb_writer=writer, tokenizer=tokenizer)
         return
 
-    loss = create_loss(args)
+    # loss = create_loss(args)
+    loss = nn.BCEWithLogitsLoss()
+    classifier = zero_shot_classifier(model, coco_classnames, OPENAI_IMAGENET_TEMPLATES, args)
 
     for epoch in range(start_epoch, args.epochs):
         if is_master(args):
             logging.info(f'Start epoch {epoch}')
 
-        train_one_epoch(model, data, loss, epoch, optimizer, scaler, scheduler, dist_model, args, tb_writer=writer)
+        train_one_epoch(model, data, loss, epoch, optimizer, scaler, scheduler, dist_model, classifier, args, tb_writer=writer)
         completed_epoch = epoch + 1
-
-        if any(v in data for v in ('val', 'imagenet-val', 'imagenet-v2')):
-            evaluate(model, data, completed_epoch, args, tb_writer=writer, tokenizer=tokenizer)
+        # pdb.set_trace()
+        if any(v in data for v in ('val', 'imagenet-val', 'imagenet-v2', 'pj_dataset_val', 'coco_val', 'voc_val')):
+            evaluate(model, data, completed_epoch, args, classifier, tb_writer=writer, tokenizer=tokenizer)
 
         # Saving checkpoints.
         if args.save_logs:

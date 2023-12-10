@@ -11,7 +11,7 @@ import torch
 
 from .constants import OPENAI_DATASET_MEAN, OPENAI_DATASET_STD
 from .model import CLIP, CustomTextCLIP, convert_weights_to_lp, convert_to_custom_text_state_dict,\
-    resize_pos_embed, get_cast_dtype, resize_text_pos_embed, set_model_preprocess_cfg
+    resize_pos_embed, get_cast_dtype, resize_text_pos_embed, set_model_preprocess_cfg, AdaptedCLIP
 from .coca_model import CoCa
 from .loss import ClipLoss, DistillClipLoss, CoCaLoss, SigLipLoss
 from .openai import load_openai_model
@@ -201,12 +201,13 @@ def create_model(
 
     if pretrained and pretrained.lower() == 'openai':
         logging.info(f'Loading pretrained {model_name} from OpenAI.')
-        model = load_openai_model(
+        model = AdaptedCLIP(load_openai_model(
             model_name,
             precision=precision,
             device=device,
             cache_dir=cache_dir,
-        )
+        ))
+        model.to(device)
     else:
         model_cfg = model_cfg or get_model_config(model_name)
         if model_cfg is not None:
